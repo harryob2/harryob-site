@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+
+# Virtual environments
+venv/
+.venv/
+apps/fyp/venv/
+apps/ppt_narration/venv/
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Runtime logs and temp
+*.log
+*.pid
+*.tmp
+
+# Secrets/config overrides
+.env
+.env.*
+
+# Local backups
+*.bak
+*.bak.*

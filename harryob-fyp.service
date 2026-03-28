@@ -1,0 +1,15 @@
+[Unit]
+Description=Harry O'Brien FYP Dash App
+After=network.target
+
+[Service]
+User=harry
+Group=harry
+WorkingDirectory=/home/harry/projects/harryob-site/apps/fyp
+Environment="PATH=/home/harry/projects/harryob-site/apps/fyp/venv/bin"
+ExecStart=/home/harry/projects/harryob-site/apps/fyp/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:5002 app:server
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

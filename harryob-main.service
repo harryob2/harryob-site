@@ -1,0 +1,15 @@
+[Unit]
+Description=Harry O'Brien Main Website
+After=network.target
+
+[Service]
+User=harry
+Group=harry
+WorkingDirectory=/home/harry/projects/harryob-site
+Environment="PATH=/home/harry/projects/harryob-site/venv/bin"
+ExecStart=/home/harry/projects/harryob-site/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:5001 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

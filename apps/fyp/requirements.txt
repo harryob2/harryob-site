@@ -1,0 +1,11 @@
+dash
+dash-bootstrap-components
+dash-split-pane
+pandas
+numpy
+plotly
+scipy
+matplotlib
+flask
+gunicorn
+openpyxl

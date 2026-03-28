@@ -1,0 +1,15 @@
+[Unit]
+Description=Harry O'Brien PPT Narration App
+After=network.target
+
+[Service]
+User=harry
+Group=harry
+WorkingDirectory=/home/harry/projects/harryob-site/apps/ppt-narration
+Environment="PATH=/home/harry/projects/harryob-site/apps/ppt-narration/venv/bin"
+ExecStart=/home/harry/projects/harryob-site/apps/ppt-narration/venv/bin/gunicorn --workers 2 --bind 127.0.0.1:5003 app:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
