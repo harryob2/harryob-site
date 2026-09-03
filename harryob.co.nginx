@@ -1,6 +1,49 @@
 server {
     server_name harryob.co www.harryob.co;
 
+    # Keep the personal dashboard private while making the familiar public
+    # path lead to its tailnet-only home instead of a confusing site 404.
+    location = /dashboard {
+        return 302 https://ubuntu-4gb-hel1-1.tail7f70a1.ts.net/dashboard/$is_args$args;
+    }
+
+    location ^~ /dashboard/ {
+        return 302 https://ubuntu-4gb-hel1-1.tail7f70a1.ts.net$request_uri;
+    }
+
+
+    # MasterKi backend API
+    location = /masterki-api {
+        return 301 /masterki-api/;
+    }
+
+    location /masterki-api/ {
+        limit_req zone=masterki_api_post_per_ip burst=20 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:8787/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # MasterKi website
+    location = /masterki {
+        return 301 /masterki/;
+    }
+
+    location /masterki/ {
+        proxy_pass http://127.0.0.1:8083/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Public HealthConnect MCP/OAuth runs under its dedicated restricted
+    # database role and never transits the owner-credential dashboard.
+    include /etc/nginx/snippets/health-mcp-public-locations.conf;
+
     # Main site
     location / {
         proxy_pass http://127.0.0.1:5001;
@@ -22,6 +65,19 @@ server {
         proxy_set_header Connection "upgrade";
     }
 
+    # Incerto PTG PDF
+    location = /incerto-ptg {
+        alias /var/www/downloads/incerto-ptg.pdf;
+        default_type application/pdf;
+        add_header Content-Disposition "inline";
+    }
+
+    # Temporary file downloads
+    location /downloads/ {
+        alias /var/www/downloads/;
+        add_header Content-Disposition "attachment";
+    }
+
     # PPT Narration app
     location /ppt-narration/ {
         proxy_pass http://127.0.0.1:5003/;
@@ -30,6 +86,11 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         client_max_body_size 50M;
+    }
+
+    # Jellyfin — redirect to Tailscale
+    location /jellyfin {
+        return 302 https://ubuntu-4gb-hel1-1.tail7f70a1.ts.net/jellyfin/;
     }
 
     listen [2a01:4f9:c013:58f7::1]:443 ssl ipv6only=on; # managed by Certbot
