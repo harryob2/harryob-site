@@ -15,6 +15,9 @@
         <img src="/static/profile.webp" alt="Harry O'Brien" class="profile-img">
         <h1>Harry O'Brien</h1>
         <p class="tagline">Coding, fitness, etc.</p>
+        <p class="bio">
+            I'm <span id="age">27</span> year old engineer based out of Dublin, Ireland. I graduated from my bachelors in Information Systems at Trinity College Dublin in 2022, worked in Deutsche Bank's trading backend team in Berlin and Stryker Biomedical's manufacturing data team in Limerick, and recently completed a masters in Manufacturing at the University of Cambridge, focusing on ways to better use data from manufacturing lines. I am currently doing a residency with <a href="https://joingreenroom.com/" target="_blank" rel="noopener">Green Room</a> exploring ideas in the robotics space.
+        </p>
 
         <div class="links">
             <a href="https://github.com/harryob2" target="_blank" rel="noopener">Github</a>
@@ -35,5 +38,25 @@
     <footer>
         <p>Designed by <a href="/">Harry O'Brien</a></p>
     </footer>
+    <script>
+        const updateAge = () => {
+            const dublinDate = new Intl.DateTimeFormat('en-IE', {
+                timeZone: 'Europe/Dublin',
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric'
+            }).formatToParts(new Date());
+            const datePart = (type) => Number(dublinDate.find((part) => part.type === type).value);
+            const year = datePart('year');
+            const month = datePart('month');
+            const day = datePart('day');
+            const age = year - 1999 - (month < 6 || (month === 6 && day < 29) ? 1 : 0);
+
+            document.getElementById('age').textContent = age;
+        };
+
+        updateAge();
+        window.setInterval(updateAge, 60 * 60 * 1000);
+    </script>
 </body>
 </html>
