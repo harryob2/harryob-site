@@ -1,0 +1,135 @@
+name: Deploy Site
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: harryob-site-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - harryob-site
+    timeout-minutes: 10
+    env:
+      DEPLOY_DIR: /home/harry/projects/harryob-site
+      SERVICE: harryob-main
+    steps:
+      # The deploy target is itself a git checkout served directly by gunicorn,
+      # so we fast-forward it in place rather than rsyncing a copy over it.
+      # The hard reset is deliberate: it means an edit made by hand on the
+      # server survives only until the next deploy, which is what stops the
+      # working tree drifting away from main again.
+      - name: Validate deploy target
+        run: |
+          set -euo pipefail
+          test -d "$DEPLOY_DIR/.git" || { echo "Not a git checkout: $DEPLOY_DIR" >&2; exit 1; }
+          test -w "$DEPLOY_DIR" || { echo "Not writable: $DEPLOY_DIR" >&2; exit 1; }
+          owner=$(stat -c %U "$DEPLOY_DIR")
+          if [ "$owner" != "$(id -un)" ]; then
+            echo "Deploy dir owned by $owner but runner is $(id -un); ownership drift will break git" >&2
+            exit 1
+          fi
+
+      - name: Report pre-deploy state
+        run: |
+          set -euo pipefail
+          cd "$DEPLOY_DIR"
+          echo "before: $(git rev-parse --short HEAD) $(git log -1 --format=%s)"
+          git status --porcelain --untracked-files=no || true
+
+      - name: Fast-forward checkout to this commit
+        run: |
+          set -euo pipefail
+          cd "$DEPLOY_DIR"
+          git fetch --prune origin
+          git reset --hard "$GITHUB_SHA"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          echo "after:  $(git rev-parse --short HEAD) $(git log -1 --format=%s)"
+
+      # harryob.co.nginx in this repo is a RECORD of the live nginx config, not
+      # a deployable artifact. It is never copied to /etc/nginx here: the live
+      # file includes an out-of-repo snippet, and blindly installing this copy
+      # could route public MCP/OAuth traffic at the wrong backend. We only warn
+      # when the two have diverged again.
+      - name: Warn if committed nginx copy has drifted from live
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          live=/etc/nginx/sites-available/harryob.co
+          if [ -r "$live" ]; then
+            if cmp -s "$DEPLOY_DIR/harryob.co.nginx" "$live"; then
+              echo "nginx copy matches live"
+            else
+              echo "::warning title=nginx drift::harryob.co.nginx differs from $live; reconcile by hand"
+              diff -u "$live" "$DEPLOY_DIR/harryob.co.nginx" || true
+            fi
+          else
+            echo "::notice::cannot read $live from the runner; skipping nginx drift check"
+          fi
+
+      - name: Restart service
+        run: |
+          set -euo pipefail
+          sudo -n systemctl restart "$SERVICE"
+          for i in $(seq 1 15); do
+            if [ "$(sudo -n systemctl is-active "$SERVICE")" = "active" ]; then
+              echo "$SERVICE active"; exit 0
+            fi
+            sleep 2
+          done
+          echo "$SERVICE failed to come back active" >&2
+          sudo -n systemctl status "$SERVICE" >&2 || true
+          exit 1
+
+      - name: Local smoke test on the gunicorn port
+        run: |
+          set -euo pipefail
+          for path in / /apps/ /cv/ /advice/; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://127.0.0.1:5001${path}")
+            echo "127.0.0.1:5001${path} -> ${code}"
+            [ "$code" = "200" ] || { echo "local check failed for ${path}" >&2; exit 1; }
+          done
+
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: deploy
+    env:
+      ROOT_URL: https://harryob.co
+    steps:
+      - name: All pages return 200
+        run: |
+          set -euo pipefail
+          for path in / /apps/ /cv/ /advice/; do
+            curl -fLsS --max-time 20 "${ROOT_URL}${path}" -o "page$(echo "$path" | tr -c 'a-zA-Z0-9' '_').html"
+            echo "${path} ok"
+          done
+
+      - name: Homepage has expected content
+        run: |
+          set -euo pipefail
+          grep -Fq 'class="bio"' page__.html
+          grep -Fq 'newsletter-embed' page__.html
+          grep -Fq 'id="age"' page__.html
+          grep -Fq 'harryobrien.substack.com' page__.html
+
+      - name: Apps page lists the apps
+        run: |
+          set -euo pipefail
+          grep -Fq 'MasterKi' page_apps__.html
+          grep -Fq 'MathGate' page_apps__.html
+
+      - name: Static assets serve
+        run: |
+          set -euo pipefail
+          curl -fIsS --max-time 20 "${ROOT_URL}/static/style.css" >/dev/null
+          curl -fIsS --max-time 20 "${ROOT_URL}/static/profile.webp" >/dev/null
