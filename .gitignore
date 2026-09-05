@@ -7,10 +7,22 @@ __pycache__/
 .mypy_cache/
 
 # Virtual environments
+# On the server `venv` is a SYMLINK to a dated venv directory, and a pattern
+# with a trailing slash matches directories only -- git sees the symlink as a
+# file. Both spellings are needed, or the symlink shows up as untracked.
+venv
 venv/
 .venv/
-apps/fyp/venv/
-apps/ppt_narration/venv/
+# Dated venvs kept around by upgrades, e.g. venv-upgrade-20260727,
+# venv-pre-appdeps-20260727.
+venv-*/
+# Per-app venvs. The old rules named apps/fyp and apps/ppt_narration; the
+# second never matched anything because the directory is apps/ppt-narration
+# with a hyphen. Glob the app directory instead of listing them by hand.
+apps/*/venv
+apps/*/venv/
+apps/*/.venv/
+apps/*/venv-*/
 
 # OS/editor
 .DS_Store
@@ -26,6 +38,15 @@ apps/ppt_narration/venv/
 .env
 .env.*
 
-# Local backups
+# Local backups. Hand-edits on the server leave files like
+# index.html.bak.bio-20260903 and apps.html.bak-20260903-125336, so cover the
+# dash form as well as the dot form.
 *.bak
 *.bak.*
+*.bak-*
+
+# Unreferenced 18MB audio file living in static/ on the server. No page links
+# to it -- it is a direct-link share -- so it is deliberately not committed
+# rather than put a large binary in git history. Delete it from the server if
+# the link is no longer needed.
+static/fatal_distraction.mp3
