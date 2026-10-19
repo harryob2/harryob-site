@@ -18,6 +18,10 @@ def advice():
 def apps():
     return render_template('apps.html')
 
+@app.route('/quest-for-certainty/')
+def quest_for_certainty():
+    return send_from_directory('static/quest-for-certainty', 'index.html')
+
 @app.route('/cv/')
 def cv():
     return render_template('cv.html')

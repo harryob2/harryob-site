@@ -99,7 +99,7 @@ jobs:
         run: |
           set -uo pipefail
           rc=0
-          for path in / /apps/ /cv/ /advice/; do
+          for path in / /apps/ /cv/ /advice/ /quest-for-certainty/; do
             # `|| true` so a connection failure reports as a readable message
             # here rather than aborting the step with a bare curl exit code.
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://127.0.0.1:5001${path}" || true)
@@ -118,7 +118,7 @@ jobs:
       - name: All pages return 200
         run: |
           set -euo pipefail
-          for path in / /apps/ /cv/ /advice/; do
+          for path in / /apps/ /cv/ /advice/ /quest-for-certainty/; do
             curl -fLsS --max-time 20 "${ROOT_URL}${path}" -o "page$(echo "$path" | tr -c 'a-zA-Z0-9' '_').html"
             echo "${path} ok"
           done

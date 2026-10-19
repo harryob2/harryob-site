@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Escape from Peril — John Dewey, The Quest for Certainty, Chapter I</title>
+<meta name="description" content="An illustrated, narrated walk through Chapter I of John Dewey's The Quest for Certainty (1929): the full text, synchronised audio, watercolour scenes and animated diagrams.">
+<meta property="og:title" content="Escape from Peril — Dewey's Quest for Certainty, Chapter I">
+<meta property="og:description" content="The whole chapter, read aloud, with word-by-word highlighting, watercolour illustrations and animated diagrams of the argument.">
+<meta property="og:image" content="https://harryob.co/static/quest-for-certainty/img/hazard.webp">
+<meta name="theme-color" content="#f7f2e6">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/profile.webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/quest-for-certainty/qfc.css?v=1">
+</head>
+<body>
+
+<!-- Shared watercolour filters for every scene's SVG -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <defs>
+    <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="3.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <!-- Watercolour wash: ragged edge, soft pigment mottling, and the darker rim where pigment dries -->
+    <filter id="wash" x="-30%" y="-30%" width="160%" height="160%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.013" numOctaves="3" seed="8" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="40" xChannelSelector="R" yChannelSelector="G" result="d"/>
+      <feGaussianBlur in="d" stdDeviation="1.6" result="b"/>
+      <feMorphology in="b" operator="erode" radius="5" result="er"/>
+      <feGaussianBlur in="er" stdDeviation="6" result="inner"/>
+      <feComposite in="b" in2="inner" operator="out" result="rim"/>
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="g"/>
+      <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -0.9 1.1" result="ga"/>
+      <feComposite in="b" in2="ga" operator="in" result="body"/>
+      <feComponentTransfer in="body" result="body2"><feFuncA type="linear" slope="0.75"/></feComponentTransfer>
+      <feMerge><feMergeNode in="body2"/><feMergeNode in="rim"/></feMerge>
+    </filter>
+    <marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M1 1.5 L8 5 L1 8.5" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+</svg>
+
+<!-- Cover -->
+<div id="cover" class="cover">
+  <div class="cover-art" aria-hidden="true"><img src="/static/quest-for-certainty/img/hazard.webp" alt=""></div>
+  <div class="cover-body">
+    <p class="kicker">John Dewey · <em>The Quest for Certainty</em> (1929) · Chapter I</p>
+    <h1>Escape from Peril</h1>
+    <p class="cover-lede">Why did philosophy come to prize knowing over doing? Dewey traces the answer back to fear: a world of hazards, and a longing for a certainty that action can never give.</p>
+    <div class="cover-actions">
+      <button id="btnWatch" class="btn primary"><span class="ico">▶</span> Watch &amp; listen <span class="dim">44 min</span></button>
+      <button id="btnRead" class="btn">Read at my own pace</button>
+    </div>
+    <p id="resumeNote" class="resume" hidden></p>
+    <p class="cover-hint">The narration drives the page: each word lights up as it is read, the text scrolls itself, and the scenes paint themselves in step with the argument. Click any word to jump there. <kbd>Space</kbd> plays and pauses.</p>
+    <p class="cover-foot"><a href="/">harryob.co</a></p>
+  </div>
+</div>
+
+<div class="app" id="app">
+  <!-- Stage: the "film" -->
+  <section class="stage" id="stage" aria-label="Illustrations and diagrams that follow the narration">
+    <div class="paper"></div>
+    <div class="frame" id="frame">
+      <div class="layer" id="layerA"><img alt=""></div>
+      <div class="layer" id="layerB"><img alt=""></div>
+      <div class="overlays" id="overlays"></div>
+    </div>
+    <div class="mtag" id="mtag"><span class="num"></span><span class="ttl"></span></div>
+    <div class="stage-quotes" id="stageQuotes"></div>
+    <button class="stage-play" id="stagePlay" aria-label="Play">▶</button>
+  </section>
+
+  <!-- The essay -->
+  <main class="reader" id="reader">
+    <header class="intro">
+      <a class="home" href="/">← harryob.co</a>
+      <p class="kicker">John Dewey · <em>The Quest for Certainty</em> · 1929</p>
+      <h1>Chapter I<br><span>Escape from Peril</span></h1>
+      <div class="about">
+        <p><strong>The book.</strong> <em>The Quest for Certainty: A Study of the Relation of Knowledge and Action</em> grew out of the Gifford Lectures that John Dewey (1859–1952), the American pragmatist, gave at Edinburgh in 1929. Its target is a split that runs through Western thought: <em>theory</em> above <em>practice</em>, knowing above doing.</p>
+        <p><strong>This chapter</strong> is the diagnosis. Dewey argues that the split is not a discovery of reason but a legacy of fear. Living among hazards, people sought safety either by appeasing the powers that rule their fate or by mastering nature through the arts. Because practical action is always uncertain, they came to imagine a higher realm of fixed, eternal Being that pure thought could grasp with complete certainty. Greek philosophy turned that old religious division into a theory of reality and of knowledge, and the theory still governs how we think about mind, truth and value.</p>
+        <p class="howto">The chapter is split into eighteen movements. Each opens with a short note in the margin explaining what Dewey is doing there. Words with a dotted underline have a gloss on hover.</p>
+      </div>
+      <nav class="toc" id="toc" aria-label="Movements"></nav>
+    </header>
+    <article id="essay" class="essay" aria-live="off"></article>
+    <footer class="outro" id="outro"></footer>
+  </main>
+</div>
+
+<!-- Player -->
+<div class="player" id="player">
+  <button class="pbtn play" id="btnPlay" aria-label="Play"><svg viewBox="0 0 24 24"><path class="i-play" d="M8 5.5v13l10.5-6.5z"/><g class="i-pause"><rect x="6.5" y="5" width="4" height="14" rx="1"/><rect x="13.5" y="5" width="4" height="14" rx="1"/></g></svg></button>
+  <button class="pbtn sm" id="btnBack" aria-label="Back 10 seconds" title="Back 10s (←)"><svg viewBox="0 0 24 24"><path d="M12 5V2L7 6l5 4V7a6 6 0 1 1-6 6H4a8 8 0 1 0 8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.5" font-family="Inter" font-weight="600">10</text></svg></button>
+  <button class="pbtn sm" id="btnFwd" aria-label="Forward 10 seconds" title="Forward 10s (→)"><svg viewBox="0 0 24 24"><path d="M12 5V2l5 4-5 4V7a6 6 0 1 0 6 6h2a8 8 0 1 1-8-8z"/><text x="12" y="16.2" text-anchor="middle" font-size="6.5" font-family="Inter" font-weight="600">10</text></svg></button>
+  <div class="time" id="tCur">0:00</div>
+  <div class="scrub" id="scrub" role="slider" aria-label="Seek" tabindex="0" aria-valuemin="0" aria-valuemax="2661" aria-valuenow="0">
+    <div class="track"><div class="fill" id="scrubFill"></div><div class="buf" id="scrubBuf"></div></div>
+    <div class="ticks" id="ticks"></div>
+    <div class="knob" id="knob"></div>
+    <div class="scrub-tip" id="scrubTip"></div>
+  </div>
+  <div class="time dim" id="tDur">44:21</div>
+  <button class="pbtn txt" id="btnRate" title="Playback speed">1×</button>
+  <button class="pbtn txt follow on" id="btnFollow" title="Auto-scroll with narration">Follow</button>
+  <button class="pbtn sm" id="btnToc" aria-label="Contents" title="Contents"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg></button>
+</div>
+
+<button class="backpill" id="backPill" hidden>↓ Back to the narration</button>
+<div class="tip" id="tip" role="tooltip"></div>
+
+<aside class="drawer" id="drawer" aria-label="Contents" hidden>
+  <div class="drawer-head"><h2>Movements</h2><button class="pbtn sm" id="drawerClose" aria-label="Close">✕</button></div>
+  <ol id="drawerList"></ol>
+</aside>
+
+<audio id="audio" preload="metadata" src="/downloads/quest-for-certainty-chapter-1.mp3"></audio>
+
+<script src="/static/quest-for-certainty/scenes.js?v=1"></script>
+<script src="/static/quest-for-certainty/qfc.js?v=1"></script>
+</body>
+</html>
