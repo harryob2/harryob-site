@@ -1,8 +1,0 @@
-venv/
-__pycache__/
-*.pyc
-*.log
-stderr.log
-tmp/
-app.py.bak*
-app.py-old
