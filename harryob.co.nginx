@@ -29,15 +29,11 @@ server {
 
     # MasterKi website
     location = /masterki {
-        return 301 /masterki/;
+        return 301 https://masterki.org/$is_args$args;
     }
 
     location /masterki/ {
-        proxy_pass http://127.0.0.1:8083/;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        rewrite ^/masterki/(.*)$ https://masterki.org/$1 permanent;
     }
 
     # Public HealthConnect MCP/OAuth runs under its dedicated restricted
